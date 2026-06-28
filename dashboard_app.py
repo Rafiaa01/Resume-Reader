@@ -15,8 +15,9 @@ app = Flask(__name__)
 CORS(app)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
 
-CSV_PATH      = r"C:\Users\PMYLS\Desktop\rafiapython\resume_reader\ranked_resumes_ai.csv"
-UPLOAD_FOLDER = r"C:\Users\PMYLS\Desktop\rafiapython\resume_reader\uploads"
+BASE_DIR      = os.path.dirname(os.path.abspath(__file__))
+CSV_PATH      = os.environ.get("CSV_PATH",      os.path.join(BASE_DIR, "ranked_resumes_ai.csv"))
+UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", os.path.join(BASE_DIR, "uploads"))
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 _current_jd = {
@@ -38,8 +39,9 @@ ALL_SKILLS = [
 ]
 
 
-TESSERACT_CMD = r"C:\Users\PMYLS\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
-POPPLER_PATH  = r"C:\poppler\poppler-24.08.0\Library\bin"
+# On Windows use local paths; on Linux (Render) tesseract/poppler are on PATH
+TESSERACT_CMD = os.environ.get("TESSERACT_CMD", r"C:\Users\PMYLS\AppData\Local\Programs\Tesseract-OCR\tesseract.exe")
+POPPLER_PATH  = os.environ.get("POPPLER_PATH",  r"C:\poppler\poppler-24.08.0\Library\bin") if os.name == "nt" else None
 
 
 def extract_text_from_file(file_path, filename):
@@ -59,8 +61,10 @@ def extract_text_from_file(file_path, filename):
                     import pytesseract
                     from pdf2image import convert_from_path
                     pytesseract.pytesseract.tesseract_cmd = TESSERACT_CMD
-                    images = convert_from_path(file_path, dpi=150,
-                                               poppler_path=POPPLER_PATH, last_page=5)
+                    kwargs = {"dpi": 150, "last_page": 5}
+                    if POPPLER_PATH:
+                        kwargs["poppler_path"] = POPPLER_PATH
+                    images = convert_from_path(file_path, **kwargs)
                     for img in images:
                         text += pytesseract.image_to_string(img, config="--oem 1 --psm 3") + "\n"
                 except Exception as ocr_err:
@@ -378,4 +382,5 @@ if __name__ == "__main__":
     print("  Resume Screening Dashboard")
     print("  Open: http://127.0.0.1:5000")
     print("=" * 55)
-    app.run(debug=False, port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=False, host="0.0.0.0", port=port)

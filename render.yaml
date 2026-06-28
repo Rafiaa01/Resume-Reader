@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: resume-screener
+    runtime: python
+    buildCommand: |
+      apt-get install -y tesseract-ocr poppler-utils
+      pip install -r requirements.txt
+    startCommand: gunicorn dashboard_app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
