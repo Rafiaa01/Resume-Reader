@@ -1,0 +1,14 @@
+# Large data files - too big for GitHub
+checkpoint.csv
+extracted_resumes.csv
+resumes_with_skills.csv
+ranked_resumes.csv
+all_resumes_text.csv
+
+# Uploaded test resumes
+uploads/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
